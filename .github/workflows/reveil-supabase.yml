@@ -1,0 +1,39 @@
+# Réveil de la base Blackroom : Supabase met en pause les projets gratuits
+# après environ 7 jours sans activité. Cette tâche interroge la base chaque jour.
+name: Réveil de la base Blackroom
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # tous les jours vers 7 h 17 (heure de Paris en hiver)
+  workflow_dispatch: {}    # bouton « Run workflow » pour le lancer à la main
+
+permissions:
+  contents: write
+
+jobs:
+  reveil:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Interroger la base
+        env:
+          SB_URL: https://wyfvutnfrdomenrswegp.supabase.co
+          SB_KEY: sb_publishable_se3BO4mlTLA4SyZG_xI22g_DBDKJJap
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" "$SB_URL/rest/v1/challenges?select=id&limit=1" -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY")
+          echo "Réponse de la base : $code"
+          test "$code" = "200"
+
+      - uses: actions/checkout@v4
+
+      - name: Garder la tâche active (GitHub la coupe après 60 jours sans activité)
+        run: |
+          last=$(git log -1 --format=%ct)
+          now=$(date +%s)
+          if [ $(( (now - last) / 86400 )) -ge 45 ]; then
+            date -u +"%Y-%m-%dT%H:%M:%SZ" > .reveil
+            git config user.name "Blackroom (réveil automatique)"
+            git config user.email "contact.blackroom.app@gmail.com"
+            git add .reveil
+            git commit -m "Réveil automatique de la base"
+            git push
+          fi
