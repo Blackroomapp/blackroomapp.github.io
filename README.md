@@ -2,4 +2,7 @@
 
 Page publique d'écoute des sons partagés depuis l'appli Blackroom.
 
-Un lien de partage a la forme `https://duxosaure.github.io/BLACKROOM/?s=<id du son>`.
+Liens :
+
+- un son : `https://blackroomapp.github.io/?s=<id du son>`
+- une carte d'artiste : `https://blackroomapp.github.io/?a=<pseudo>`
